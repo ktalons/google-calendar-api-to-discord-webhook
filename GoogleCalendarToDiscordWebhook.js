@@ -43,42 +43,47 @@ function postEventsToChannel() {
               "Content-Type": "application/json",
           },
           "payload": JSON.stringify({
-              "content": "‌",
-              "embeds": [{
-              "author": {
-                  "name": `${event.summary}`,
-                  "icon_url": "https://cdn.discordapp.com/attachments/696400605908041794/888874282950750238/1200px-Google_Calendar_icon_28202029.png"
-              },
-                "timestamp": DTnow.toISO(),
-                "description":`[Google Event Link](${event.htmlLink})`,
-                "color": 1425196,
-                "fields":[
-                    {
-                      "name":"Start Time",
-                      "value": ISOToDiscordUnix(ISOStartDate) ?? NO_VALUE_FOUND,
-                      "inline":false
-                    },
-                    {
-                      "name":"End Time",
-                      "value":ISOToDiscordUnix(ISOEndDate) ?? NO_VALUE_FOUND,
-                      "inline":false
-                    },
-                    {
-                      "name":"Location",
-                      "value":event.location ?? NO_VALUE_FOUND,
-                      "inline":false
-                    },
-                    {
-                      "name":"Description",
-                      "value":event.description ?? NO_VALUE_FOUND,
-                      "inline":false
-                    }
-                ]
-            }]
-          })
-      };
-      Logger.log(options, null, 2);
-      UrlFetchApp.fetch(CHANNEL_POST_URL, options);
+               content: "\u200b",    // zero-width space to suppress the plain-text line
+    embeds: [
+      {
+        title: event.summary,
+        url: event.htmlLink,
+        color: 0x4285F4,
+        thumbnail: {
+          url: "https://cdn.discordapp.com/attachments/696400605908041794/888874282950750238/1200px-Google_Calendar_icon_28202029.png"
+        },
+        timestamp: DTnow.toISO(),
+        fields: [
+          {
+            name: "🗓️ Date",
+            value: `<t:${Math.floor(DateTime.fromISO(ISOStartDate).toSeconds())}:D>`,
+            inline: true
+          },
+          {
+            name: "⏰ Time",
+            value: `<t:${Math.floor(DateTime.fromISO(ISOStartDate).toSeconds())}:t> – <t:${Math.floor(DateTime.fromISO(ISOEndDate).toSeconds())}:t>`,
+            inline: true
+          },
+          {
+            name: "📍 Location",
+            value: event.location || NO_VALUE_FOUND,
+            inline: true
+          },
+          {
+            name: "📖 Description",
+            value: event.description?.slice(0, 1024) || NO_VALUE_FOUND,
+            inline: false
+          }
+        ],
+        footer: {
+          text: "Google Calendar Event",
+          icon_url: "https://cdn.discordapp.com/attachments/696400605908041794/888874282950750238/1200px-Google_Calendar_icon_28202029.png"
+        }
+      }
+    ]
+  })
+};
+UrlFetchApp.fetch(CHANNEL_POST_URL, options);
     }
   } else {
     Logger.log(`No events starting within ${minsInAdvance} minute(s) found.`);
